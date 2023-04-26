@@ -8,3 +8,5 @@ add_library(my_http_lib STATIC ${MY_HTTP_LIB_HEADERS} ${MY_HTTP_LIB_SRC})
 target_include_directories(my_http_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(my_http_lib PUBLIC fmt::fmt)
+target_link_libraries(my_http_lib PUBLIC llhttp_static)
+target_link_libraries(my_http_lib PUBLIC nlohmann_json::nlohmann_json)

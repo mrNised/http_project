@@ -11,7 +11,7 @@
 #include <my_http_lib/response.h>
 #include <my_http_lib/request.h>
 
-namespace my_http_parser
+namespace my_http_lib
 {
     class Connection
     {

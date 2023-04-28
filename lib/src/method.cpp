@@ -1,6 +1,6 @@
 #include <my_http_lib/method.h>
 
-namespace my_http_parser {
+namespace my_http_lib {
     static Method ParseMethod(const char* method, size_t  size)
     {
         //TODO : parse the method from the data sent by llhttp

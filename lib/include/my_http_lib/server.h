@@ -12,7 +12,7 @@
 #include <my_http_lib/response.h>
 #include <my_http_lib/request.h>
 
-namespace my_http_parser {
+namespace my_http_lib {
 
     using Handler = std::function<void(const Request& request, Response& response)>;
 
@@ -81,5 +81,6 @@ namespace my_http_parser {
         SOCKET                                        m_serverSocket;
         std::vector<Connection>                       m_clientConnections;
         std::unordered_map<std::string,HandlerHolder> m_handlers;
+        bool                                          IsServerClosed;
     };
 }

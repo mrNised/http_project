@@ -4,7 +4,7 @@
 
 #include <my_http_lib/method.h>
 
-namespace my_http_parser {
+namespace my_http_lib {
     class Response
     {
     public:

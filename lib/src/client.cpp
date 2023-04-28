@@ -1,6 +1,6 @@
 #include "my_http_lib/client.h"
 
-namespace my_http_parser {
+namespace my_http_lib {
     Client::Client(const std::string sevrerIp, uint16_t serverPort) {
         //1 - Connect the client socket to the server
         //2 - Initialize the llhttp parser using llhttp_settings_t like in the example from https://github.com/nodejs/llhttp README

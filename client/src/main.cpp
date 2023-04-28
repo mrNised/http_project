@@ -1,10 +1,9 @@
 #include <iostream>
 
-#include <my_http_lib/http_lib.h>
+/*using namespace my_http_lib;*/
 
-int main(int argc, char* argv[])
-{
-    my_http_lib::test();
+int main(int argc, char *argv[]) {
+
     std::cout << "Hello, World!" << std::endl;
     //Create a client allowing to do request on certain URL (see the PDF at the root)
     return EXIT_SUCCESS;

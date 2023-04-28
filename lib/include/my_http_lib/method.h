@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace my_http_parser
+namespace my_http_lib
 {
     enum class Method
     {

@@ -2,7 +2,7 @@
 
 #pragma once
 
-namespace my_http_parser {
+namespace my_http_lib {
     class Request
     {
     public:

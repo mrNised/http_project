@@ -6,7 +6,7 @@
 #include "response.h"
 #include "request.h"
 
-namespace my_http_parser {
+namespace my_http_lib {
     class Client
     {
     public:

@@ -6,4 +6,8 @@ set(CLIENT_SRC
 add_executable(client ${CLIENT_HEADERS} ${CLIENT_SRC})
 target_include_directories(client PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(client PUBLIC my_http_lib)
+target_link_libraries(client PUBLIC my_http_lib ws2_32)
+
+if(WIN32)
+    target_compile_definitions(client PUBLIC WINDOWS_PLATFORM)
+endif()

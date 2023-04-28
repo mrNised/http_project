@@ -1,6 +1,6 @@
 #include "my_http_lib/connection.h"
 
-namespace my_http_parser
+namespace my_http_lib
 {
     Connection::Connection(SOCKET clientSocket, Connection::ConnectionRequestHandler RequestHandler,
                            Connection::ConnectionClosedHandler CloseHandler):
@@ -10,7 +10,7 @@ namespace my_http_parser
 
     {
         // 1 - Start the recv thread
-        //2 - Initialize the llhttp parser using llhttp_settings_t like in the example from https://github.com/nodejs/llhttp README
+        // 2 - Initialize the llhttp parser using llhttp_settings_t like in the example from https://github.com/nodejs/llhttp README
         //                  - Register our callbacks
         //                      - static int HandleOnMessageComplete(llhttp_t* m_parser);
         //                      - static int HandlePathParsed(llhttp_t* m_parser);

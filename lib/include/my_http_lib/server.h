@@ -43,6 +43,11 @@ namespace my_http_lib {
         void Listen();
 
         /**
+         *
+         */
+        void TestRec(SOCKET clientSocket);
+
+        /**
          * Register a handler to a path and method
          * @param method The method to react to
          * @param path  The path to react on

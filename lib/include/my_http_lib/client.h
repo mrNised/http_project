@@ -22,6 +22,11 @@ namespace my_http_lib {
         ~Client();
 
         /**
+       * For testing
+       */
+        void TestLaunch(std::string message);
+
+        /**
          * Launch a request and block until a response is received
          * @param request
          * @return

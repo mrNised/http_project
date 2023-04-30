@@ -29,13 +29,15 @@ static WinSockInitializer __WIN_INIT__ {};
 
 using namespace my_http_lib;
 
-int main(int argc, char *argv[]) {
-
-    /*my_http_lib::test();*/
+int main(int argc, char *argv[])
+{
     std::cout << "Hello, World!" << std::endl;
     //Create a server serving HTTP content (see the PDF for more infos)
     const std::string listeningInterface = "127.0.0.1";
     uint16_t listeningPort = 45'000;
-    my_http_lib::Server server = Server(listeningInterface, listeningPort);
+
+    Server server = Server(listeningInterface, listeningPort);
+    server.Listen();
+
     return EXIT_SUCCESS;
 }

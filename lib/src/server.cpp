@@ -17,7 +17,7 @@ namespace my_http_lib
         sockaddr_in serverAddr;
         serverAddr.sin_family = AF_INET;
         serverAddr.sin_port = htons(listeningPort);
-        serverAddr.sin_addr.S_un.S_addr = INADDR_ANY/*inet_addr(listeningInterface.c_str())*/;
+        serverAddr.sin_addr.S_un.S_addr = inet_addr(listeningInterface.c_str());
 
         //Once a TCP socket is created,
         // => On a server we must bind to a port and an IP
@@ -90,8 +90,9 @@ namespace my_http_lib
             }
 
             /*Connection NewConnection = Connection(clientSocket, )*/
-        }
 
+            TestRec(clientSocket);
+        }
     }
 
     void Server::Handle(Method method, const std::string &path, Handler handler)
@@ -117,5 +118,52 @@ namespace my_http_lib
     void Server::Delete(const std::string &path, Handler handler)
     {
         Handle(Method::Delete, path, handler);
+    }
+
+    void Server::TestRec(SOCKET clientSocket) {
+        //We create a buffer to store our received packets
+        int error;
+        int byteReceived = 0;
+        std::array<char, 65535> recvBuffer{};
+        do
+        {
+            //Contrary to UDP, we use recv instead of recvfrom to receive data. This function
+            // takes the CLIENT SOCKET, the buffer, its size and flags (usually 0)
+            byteReceived = recv(clientSocket, recvBuffer.data(), recvBuffer.size(), 0);
+
+            if(byteReceived > 0)
+            {
+                //We received a packet
+
+                std::string msgReceived(recvBuffer.data(), byteReceived);
+                std::cout << "Server : We received : " << msgReceived << std::endl;
+
+                //We echo the packet back to the client
+                //Like in recv instead of sendto (that we use in UDP) we use send
+                //since TCP is connection-based and CLientSocket can only be used
+                //to communicate to this specific client.
+                error = send(clientSocket, recvBuffer.data(), byteReceived, 0);
+                if(error < 0)
+                {
+                    //An error
+                    error = WSAGetLastError();
+                    std::cout << "There was an error while sending" << std::endl;
+                    break;
+                }
+            }
+            else if(byteReceived == 0)
+            {
+                //The connection is closing
+                std::cout << "Connection closing" << std::endl;
+            }
+            else
+            {
+                //An error
+                error = WSAGetLastError();
+                std::cout << "There was an error : " << error << std::endl;
+                break;
+            }
+        }while(byteReceived > 0);
+
     }
 }

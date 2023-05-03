@@ -33,7 +33,7 @@ namespace my_http_lib {
          */
         Response LaunchRequest(const Request& request);
     private:
-        llhttp_t* m_parser;
+        llhttp_t m_parser;
         SOCKET m_clientSocket;
 
         Response m_currentResponse;
@@ -57,6 +57,6 @@ namespace my_http_lib {
          * @param m_parser
          * @return
          */
-        static int HandleBodyParsed(llhttp_t* m_parser);
+        static int HandleBodyParsed(llhttp_t* m_parser, const char *at, size_t length);
     };
 }

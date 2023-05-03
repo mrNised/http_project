@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
     uint16_t listeningPort = 45'000;
 
     Server server = Server(listeningInterface, listeningPort);
+    /*server.Get("/toto", [](const Request& request, Response& response){response.SetBody("Hello world!");});*/
     server.Listen();
 
     return EXIT_SUCCESS;

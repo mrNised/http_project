@@ -1,6 +1,7 @@
 #include <ws2tcpip.h>
 #include <iostream>
 #include "my_http_lib/client.h"
+#include "fmt/format.h"
 
 namespace my_http_lib {
     Client::Client(const std::string sevrerIp, uint16_t serverPort) {
@@ -26,8 +27,7 @@ namespace my_http_lib {
         if(error < 0)
         {
             error = WSAGetLastError();
-            std::cout << "There was an error : " << error << std::endl;
-            //TODO : error
+            throw (fmt::format("There was an error {} while {}", error, "the client tried getting the address"));
         }
 
         //Addrinfo (returned by getaddrinfo) is linked list of address.
@@ -79,34 +79,21 @@ namespace my_http_lib {
         /* Set user callback */
         settings.on_message_complete = HandleOnMessageComplete;
         settings.on_status_complete = HandleStatusParsed;
-        /*settings.on = HandleBodyParsed;*/
+        settings.on_body = HandleBodyParsed;
 
         /* Initialize the parser in HTTP_BOTH mode, meaning that it will select between
          * HTTP_REQUEST and HTTP_RESPONSE parsing automatically while reading the first
          * input.
          */
-        llhttp_init(m_parser, HTTP_BOTH, &settings);
+        llhttp_init(&m_parser, HTTP_BOTH, &settings);
 
-        m_parser->data = this;
-
-        /* Parse request! */
-        /*const char* request = "GET / HTTP/1.1\r\n\r\n";
-        int request_len = strlen(request);
-
-        enum llhttp_errno err = llhttp_execute(m_parser, request, request_len);
-        if (err == HPE_OK) {
-            *//* Successfully parsed! *//*
-        } else {
-            fprintf(stderr, "Parse error: %s %s\n", llhttp_errno_name(err),
-                    m_parser->reason);
-        }*/
+        m_parser.data = this;
     }
 
     Client::~Client() {
         //TODO - Close it the right way
         //1 - Close the socket
         closesocket(m_clientSocket);
-        //2 - Cleanup the llhttp parser
         //3 - Delete any pointer
     }
 
@@ -116,8 +103,19 @@ namespace my_http_lib {
         //          - Remember how the HTTP request is done : https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages
         //          - You just need basic stuff so no headers. Just method, path, version and body
         //          - Remember that a HTTP request MUST end with /r/n/r/n
+        auto it = MethodToStringMap.find(request.GetMethod());
+        std::string requestString = fmt::format("{} / HTTP/1.1\r\n\r\n", it->second);
         // 2 - Send the new request to the server
+        int byteSent = send(m_clientSocket, requestString.c_str(), requestString.size(), 0);
+        int error;
+        if(byteSent < 0)
+        {
+            error = WSAGetLastError();
+            throw (fmt::format("There was an error {} while {}", error, "the client tried getting the address"));
+            closesocket(m_clientSocket);
+        }
         // 3 - Recv until you get an answer
+
         // 4 - Start the parsing using llhttp and wait for it to finish (HandleOnMessageComplete method will help)
         // 5 - Returns the parsed response
 
@@ -135,7 +133,7 @@ namespace my_http_lib {
         return 0;
     }
 
-    int Client::HandleBodyParsed(llhttp_t *m_parser) {
+    int Client::HandleBodyParsed(llhttp_t *m_parser, const char *at, size_t length) {
         // 1 - Fill the body in the object response (m_currentResponse) (use m_parser->data to get back your this pointer)
         return 0;
     }

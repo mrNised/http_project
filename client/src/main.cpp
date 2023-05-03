@@ -2,6 +2,7 @@
 #include <vector>
 #include <sstream>
 #include <unordered_map>
+#include <memory>
 
 #include "my_http_lib/client.h"
 
@@ -32,46 +33,53 @@ using namespace my_http_lib;
 
 bool ProcessInputs(std::string msg, Request &request);
 std::string ToLowerString(std::string data);
-Method string_to_enum(std::string msg);
-
-static std::unordered_map<std::string,Method> const VerbEnumMap = {
-        {"get",Method::Get},
-        {"post",Method::Post},
-        {"put",Method::Put},
-        {"delete",Method::Delete},
-        {"option",Method::Option}
-};
 
 int main(int argc, char *argv[]) {
 
-    std::cout << "Hello, World!" << std::endl;
-    const std::string serverIP = "127.0.0.1";
-    uint16_t serverPort = 45'000;
-    /*Client clientTest = Client(serverIP, serverPort);*/
+    std::shared_ptr<Client> client;
+    bool ConnectionValid = false;
+    do{
+        std::cout << "To connect to the server, please enter the address. Ex : 127.0.0.1"<< std::endl;
+        std::string temp;
+/*        std::cin >> temp;
+        const std::string serverIP = temp;*/
+        const std::string serverIP = "127.0.0.1";
+        uint16_t serverPort = 45'000;
+        try {
+            client = std::make_shared<Client>(serverIP, serverPort);
+            ConnectionValid = true;
+        }
+        catch (std::string errorMsg){
+            std::cout << errorMsg;
+            ConnectionValid = false;
+        }
+    } while (!ConnectionValid);
 
+    std::cout << "Enter \"QUIT\" to close the program" << std::endl;
+    std::cout << "Please format your request like this :" << std::endl;
+    std::cout << "Verb/Path/Argument" << std::endl;
+    std::cout << "Ex : Get/home/Argument" << std::endl;
     bool stop = false;
     while(!stop){
+        std::cout << "Enter the message you want to send : ";
         Request request = Request(Method::Get, "path", "message");
         //Lire les messages depuis la console
         std::string messageToSend;
-        std::cout << "Enter \"QUIT\" to close the program" << std::endl;
-        std::cout << "Please format your request like this :" << std::endl;
-        std::cout << "Verb/Path/Argument" << std::endl;
-        std::cout << "Ex : Get/home/Argument" << std::endl;
-        std::cout << "Enter the message you want to send : ";
+
         std::cin >> messageToSend;
 
-        if(messageToSend == ToLowerString("QUIT")){
+        if(messageToSend != ToLowerString("QUIT")){
+            if(ProcessInputs(messageToSend, request)){
+                client->LaunchRequest(request);
+            }
+        } else{
             // Mettre le boolean stop à true et close la socket
             // TODO : Close Socket
+            delete &client;
+
             stop = true;
             std::cout << "Closing ... " << std::endl;
-        } else{
-            ProcessInputs(messageToSend, request);
         }
-        //Envoyer le message au serveur
-        /*clientTest.TestLaunch(messageToSend);*/
-
     }
 
     //Create a client allowing to do request on certain URL (see the PDF at the root)
@@ -89,12 +97,19 @@ bool ProcessInputs(std::string msg, Request &request){
         seglist.push_back(segment);
     }
 
-    Method tempMethod = string_to_enum(ToLowerString(seglist[0]));
-    if(tempMethod != Method::Unknown){
-        request.SetMethod(tempMethod);
-        validRequest = true;
-        std::cout << "Not Unknown" << std::endl;
+    if(seglist.size() == 3){
+        Method tempMethod = char_to_enum(ToLowerString(seglist[0]).c_str());
+        if(tempMethod != Method::Unknown){
+            request.SetMethod(tempMethod);
+            validRequest = true;
+            std::cout << "Not Unknown" << std::endl;
+        }
+        request.SetPath("/" + seglist[1]);
+        request.SetBody(seglist[2]);
+    }else{
+        std::cout << "Wrong request format, make sure your request is formatted Verb/Path/Argument" << std::endl;
     }
+
 
     return validRequest;
 }
@@ -103,17 +118,4 @@ std::string ToLowerString(std::string data){
     std::transform(data.begin(), data.end(), data.begin(),
                    [](unsigned char c){ return std::tolower(c); });
     return data;
-}
-
-Method string_to_enum(std::string msg) {
-    Method method;
-    auto it = VerbEnumMap.find(msg);
-    if (it != VerbEnumMap.end()) {
-        method = it->second;
-        std::cout << "Good answer" << std::endl;
-    } else {
-        std::cout << "There was an error while finding the verb" << std::endl;
-        method = Method::Unknown;
-    }
-    return method;
 }

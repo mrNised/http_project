@@ -31,7 +31,9 @@ namespace my_http_lib
         SOCKET                       m_clientSocket;
         std::shared_ptr<std::thread> m_clientThread;
 
-        llhttp_t* m_parser;
+        bool stop;
+
+        llhttp_t m_parser;
 
         Request m_currentRequest;
 
@@ -43,6 +45,11 @@ namespace my_http_lib
          * The method executed by the connection thread
          */
         void ThreadUpdate();
+
+        /**
+         * Called to parse the request from the client
+         */
+        void ParseRequestFromClient(std::string msgReceived);
 
         /**
          * Called when the message coming from the client is parsed
@@ -70,6 +77,6 @@ namespace my_http_lib
          * @param m_parser
          * @return
          */
-        static int HandleBodyParsed(llhttp_t* m_parser);
+        static int HandleBodyParsed(llhttp_t* m_parser, const char *at, size_t length);
     };
 }

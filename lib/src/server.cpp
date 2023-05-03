@@ -2,6 +2,7 @@
 #include <wspiapi.h>
 
 #include "my_http_lib/server.h"
+#include "fmt/format.h"
 
 namespace my_http_lib
 {
@@ -25,8 +26,7 @@ namespace my_http_lib
         if(error < 0)
         {
             error = WSAGetLastError();
-            std::cout << "There was an error : " << error << std::endl;
-            //TODO : Error
+            throw (fmt::format("There was an error {} while {}", error, "the server tried binding"));
         }
     }
 
@@ -36,8 +36,6 @@ namespace my_http_lib
         //We close our server
         closesocket(m_serverSocket);
         //TODO 2 - Close all the clients connections
-        //We close our client socket
-        /*closesocket(clientSocket);*/
         // 3 - Cleanup everything
     }
 
@@ -45,7 +43,8 @@ namespace my_http_lib
     {
         //1 - In loop (blocking until the server is closed)
         //          - Accept new connection from the TCP socket
-        //          - For each new connection create a Connection object with the callbacks filled
+        //TODO:     - For each new connection create a Connection object with the callbacks filled
+
         //          - Add the Connection object to the list of all the connections
 
         IsServerClosed = false;
@@ -57,8 +56,7 @@ namespace my_http_lib
             if(error < 0)
             {
                 error = WSAGetLastError();
-                std::cout << "There was an error : " << error << std::endl;
-                //TODO : Error
+                throw (fmt::format("There was an error {} while {}", error, "the server tried listening"));
             }
 
             //TCP is connection-based. Consequently, we must accept the new connection
@@ -84,20 +82,39 @@ namespace my_http_lib
             if(clientSocket == INVALID_SOCKET)
             {
                 error = WSAGetLastError();
-                std::cout << "There was an error : " << error << std::endl;
                 closesocket(m_serverSocket);
-                //TODO : Error
+                throw (fmt::format("There was an error {} while {}", error, "the server tried listening because of an invalid socket"));
             }
 
-            /*Connection NewConnection = Connection(clientSocket, )*/
+            std::shared_ptr<Connection> NewConnection = std::make_shared<Connection>(clientSocket,[this](const Request& request, Response& response)
+                { HandleRequestReceived(request, response);}, [](const Connection& closedConnection){});
+            m_clientConnections.push_back(NewConnection);
 
-            TestRec(clientSocket);
+            /*TestRec(clientSocket);*/
         }
+    }
+
+    void Server::HandleRequestReceived(const Request& request, Response& response)
+    {
+        m_handlers.at(request.GetPath()).at(request.GetMethod()).m_handler(request, response);
     }
 
     void Server::Handle(Method method, const std::string &path, Handler handler)
     {
         //Register an handler into the m_handlers map.
+        if(m_handlers.contains(path)){
+            if(m_handlers.at(path).contains(method)){
+
+            } else{
+                HandlerHolder tempHandler{method, handler};
+                m_handlers.at(path).insert({method, tempHandler});
+            }
+        } else{
+            HandlerHolder tempHandler{method, handler};
+            std::unordered_map<Method, HandlerHolder> tempMap;
+            tempMap.insert({method, tempHandler});
+            m_handlers.insert({path, tempMap});
+        }
     }
 
     void Server::Get(const std::string &path, Handler handler)

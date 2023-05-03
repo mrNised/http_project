@@ -83,9 +83,11 @@ namespace my_http_lib {
          */
         void Delete(const std::string& path, Handler handler);
     private:
+        void HandleRequestReceived(const Request&, Response&);
+
         SOCKET                                        m_serverSocket;
-        std::vector<Connection>                       m_clientConnections;
-        std::unordered_map<std::string,HandlerHolder> m_handlers;
+        std::vector<std::shared_ptr<Connection>>      m_clientConnections;
+        std::unordered_map<std::string,std::unordered_map<Method, HandlerHolder>> m_handlers;
         bool                                          IsServerClosed;
     };
 }

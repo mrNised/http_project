@@ -32,7 +32,7 @@ static WinSockInitializer __WIN_INIT__ {};
 using namespace my_http_lib;
 
 bool ProcessInputs(std::string msg, Request &request);
-std::string ToLowerString(std::string data);
+std::string ToUpperString(std::string data);
 
 int main(int argc, char *argv[]) {
 
@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     do{
         std::cout << "To connect to the server, please enter the address. Ex : 127.0.0.1"<< std::endl;
         std::string temp;
-/*        std::cin >> temp;
+   /*     std::cin >> temp;
         const std::string serverIP = temp;*/
         const std::string serverIP = "127.0.0.1";
         uint16_t serverPort = 45'000;
@@ -62,15 +62,17 @@ int main(int argc, char *argv[]) {
     bool stop = false;
     while(!stop){
         std::cout << "Enter the message you want to send : ";
-        Request request = Request(Method::Get, "path", "message");
+        Request request = Request(Method::Get, "/home", "hello");
         //Lire les messages depuis la console
-        std::string messageToSend;
+        Response response = client->LaunchRequest(request);
+        /*std::string messageToSend;
 
         std::cin >> messageToSend;
 
-        if(messageToSend != ToLowerString("QUIT")){
+        if(messageToSend != ToUpperString("QUIT")){
             if(ProcessInputs(messageToSend, request)){
-                client->LaunchRequest(request);
+                Response response = client->LaunchRequest(request);
+                std::cout << "Response with code " << response.GetCode() << " and body " << response.GetBody() << std::endl;
             }
         } else{
             // Mettre le boolean stop à true et close la socket
@@ -79,7 +81,7 @@ int main(int argc, char *argv[]) {
 
             stop = true;
             std::cout << "Closing ... " << std::endl;
-        }
+        }*/
     }
 
     //Create a client allowing to do request on certain URL (see the PDF at the root)
@@ -98,7 +100,7 @@ bool ProcessInputs(std::string msg, Request &request){
     }
 
     if(seglist.size() == 3){
-        Method tempMethod = char_to_enum(ToLowerString(seglist[0]).c_str());
+        Method tempMethod = char_to_enum(ToUpperString(seglist[0]).c_str());
         if(tempMethod != Method::Unknown){
             request.SetMethod(tempMethod);
             validRequest = true;
@@ -114,8 +116,8 @@ bool ProcessInputs(std::string msg, Request &request){
     return validRequest;
 }
 
-std::string ToLowerString(std::string data){
+std::string ToUpperString(std::string data){
     std::transform(data.begin(), data.end(), data.begin(),
-                   [](unsigned char c){ return std::tolower(c); });
+                   [](unsigned char c){ return std::toupper(c); });
     return data;
 }

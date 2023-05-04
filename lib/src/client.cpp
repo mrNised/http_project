@@ -77,7 +77,6 @@ namespace my_http_lib {
         llhttp_settings_init(&settings);
 
         /* Set user callback */
-        settings.on_message_complete = HandleOnMessageComplete;
         settings.on_status_complete = HandleStatusParsed;
         settings.on_body = HandleBodyParsed;
 
@@ -111,31 +110,66 @@ namespace my_http_lib {
         if(byteSent < 0)
         {
             error = WSAGetLastError();
-            throw (fmt::format("There was an error {} while {}", error, "the client tried getting the address"));
             closesocket(m_clientSocket);
+            throw (fmt::format("There was an error {} while {}", error, "the client tried getting the address"));
         }
         // 3 - Recv until you get an answer
+        std::array<char, 65535> recvBuffer{};
+        int byteReceived = 0;
+        byteReceived = recv(m_clientSocket, recvBuffer.data(), recvBuffer.size(), 0);
 
-        // 4 - Start the parsing using llhttp and wait for it to finish (HandleOnMessageComplete method will help)
+        if (byteReceived > 0)
+        {
+            //We received some data
+
+            std::string msgReceived(recvBuffer.data(), byteReceived);
+            std::cout << "CLIENT : We received : " << msgReceived << std::endl;
+
+            // 4 - Start the parsing using llhttp and wait for it to finish (HandleOnMessageComplete method will help)
+            ParseResponseFromServer(msgReceived);
+
+        }
+        else if (byteReceived == 0)
+        {
+            //The socket is closing
+            closesocket(m_clientSocket);
+            std::cout << "Socket closing..." << std::endl;
+        }
+        else
+        {
+            //- If RECV fail consider the client closed so call m_closeHandler
+            error = WSAGetLastError();
+            throw (fmt::format("There was an error {} while {}", error, "connection tried recv"));
+        }
+
         // 5 - Returns the parsed response
-
         return m_currentResponse;
-    }
-
-    int Client::HandleOnMessageComplete(llhttp_t *m_parser)
-    {
-        // 1 - Stop the wait in LaunchRequest (use m_parser->data to get back your this pointer)
-        return 0;
     }
 
     int Client::HandleStatusParsed(llhttp_t *m_parser) {
         // 1 - Fill the status in the object response (m_currentResponse) (use m_parser->data to get back your this pointer)
+        Client* connection = reinterpret_cast<Client*>(m_parser->data);
+        connection->m_currentResponse.SetCode(llhttp_get_status_code(m_parser));
         return 0;
     }
 
     int Client::HandleBodyParsed(llhttp_t *m_parser, const char *at, size_t length) {
         // 1 - Fill the body in the object response (m_currentResponse) (use m_parser->data to get back your this pointer)
+        Client* connection = reinterpret_cast<Client*>(m_parser->data);
+        connection->m_currentResponse.SetBody(std::string(at, length));
         return 0;
+    }
+
+    void Client::ParseResponseFromServer(std::string msgReceived) {
+        /* Parse response! */
+
+        enum llhttp_errno err = llhttp_execute(&m_parser, msgReceived.c_str(), msgReceived.size());
+        if (err == HPE_OK) {
+            /* Successfully parsed! */
+        } else {
+            fprintf(stderr, "Parse error: %s %s\n", llhttp_errno_name(err),
+                    m_parser.reason);
+        }
     }
 
     void Client::TestLaunch(std::string message) {

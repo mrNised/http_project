@@ -16,19 +16,19 @@ namespace my_http_lib
     };
 
     static std::unordered_map<std::string,Method> const VerbEnumMap = {
-            {"get",Method::Get},
-            {"post",Method::Post},
-            {"put",Method::Put},
-            {"delete",Method::Delete},
-            {"option",Method::Option}
+            {"GET",Method::Get},
+            {"POST",Method::Post},
+            {"PUT",Method::Put},
+            {"DELETE",Method::Delete},
+            {"OPTION",Method::Option}
     };
 
     static std::unordered_map<Method,std::string> const MethodToStringMap = {
-            {Method::Get,"get"},
-            {Method::Post,"post"},
-            {Method::Put,"put"},
-            {Method::Delete,"delete"},
-            {Method::Option,"option"}
+            {Method::Get,"GET"},
+            {Method::Post,"POST"},
+            {Method::Put,"PUT"},
+            {Method::Delete,"DELETE"},
+            {Method::Option,"OPTION"}
     };
 
     /**

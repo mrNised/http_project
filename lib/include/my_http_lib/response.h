@@ -20,8 +20,8 @@ namespace my_http_lib {
          */
         [[nodiscard]] const std::string& GetBody() const { return m_body; }
 
-        void SetCode(uint8_t m_code);
-        void SetBody(std::string m_body);
+        void SetCode(uint8_t code) { m_code = code; }
+        void SetBody(std::string body) { m_body = body; }
     private:
         uint8_t     m_code;
         std::string m_body;

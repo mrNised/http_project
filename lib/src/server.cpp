@@ -35,7 +35,10 @@ namespace my_http_lib
         // 1- Close the socket
         //We close our server
         closesocket(m_serverSocket);
-        //TODO 2 - Close all the clients connections
+        // 2 - Close all the clients connections
+        for (std::shared_ptr<Connection> connection : m_clientConnections) {
+            connection->Close();
+        }
         // 3 - Cleanup everything
     }
 

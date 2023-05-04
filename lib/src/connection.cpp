@@ -30,14 +30,15 @@ namespace my_http_lib
         llhttp_settings_init(&settings);
 
         /* Set user callback */
-        settings.on_message_complete = HandleOnMessageComplete;
-        settings.on_url_complete = HandlePathParsed;
-        settings.on_body = HandleBodyParsed;
-        settings.on_method_complete = HandleMethodParsed;
+        settings.on_url = &HandlePathParsing;
+        settings.on_url_complete = &HandlePathParsed;
+        settings.on_body = &HandleBodyParsed;
+        settings.on_method = &HandleMethodParsing;
+        /*settings.on_method_complete = &HandleMethodParsed;*/
 
-        llhttp_init(&m_parser, HTTP_BOTH, &settings);
 
         m_parser.data = this;
+        llhttp_init(&m_parser, HTTP_BOTH, &settings);
     }
 
     Connection::~Connection()
@@ -60,29 +61,50 @@ namespace my_http_lib
         //4 - Delete any pointer
     }
 
-    int Connection::HandleOnMessageComplete(llhttp_t *m_parser)
+    /*int Connection::HandleOnMessageComplete(llhttp_t *m_parser)
     {
         // 1 - Stop the wait in ThreadUpdate (use m_parser->data to get back your this pointer)
-        /*Connection* connection = reinterpret_cast<Connection*>(m_parser->data);*/
+        *//*Connection* connection = reinterpret_cast<Connection*>(m_parser->data);*//*
 
         return 0;
-    }
+    }*/
 
     int Connection::HandlePathParsed(llhttp_t *m_parser)
     {
         // 1 - Fill the path in the object request (m_currentRequest) (use m_parser->data to get back your this pointer)
+        Connection* connection = reinterpret_cast<Connection*>(m_parser->data);
+        connection->m_currentRequest.SetPath(connection->currentPath);
+        return 0;
+    }
+
+    int Connection::HandlePathParsing(llhttp_t *m_parser, const char *at, size_t length)
+    {
+        Connection* connection = reinterpret_cast<Connection*>(m_parser->data);
+        connection->currentPath += std::string(at, length);
         return 0;
     }
 
     int Connection::HandleMethodParsed(llhttp_t *m_parser)
     {
         // 1 - Fill the method in the object request (m_currentRequest) (use m_parser->data to get back your this pointer)
+        Connection* connection = reinterpret_cast<Connection*>(m_parser->data);
+        Method temp = char_to_enum(connection->currentMethod);
+        connection->m_currentRequest.SetMethod(temp);
+        return 0;
+    }
+
+    int Connection::HandleMethodParsing(llhttp_t* m_parser, const char *at, size_t length)
+    {
+        Connection* connection = reinterpret_cast<Connection*>(m_parser->data);
+        connection->currentMethod = strcat(connection->currentMethod, at);
         return 0;
     }
 
     int Connection::HandleBodyParsed(llhttp_t *m_parser, const char *at, size_t length)
     {
         // 1 - Fill the body in the object request (m_currentRequest) (use m_parser->data to get back your this pointer)
+        Connection* connection = reinterpret_cast<Connection*>(m_parser->data);
+        connection->m_currentRequest.SetBody(std::string(at, length));
         return 0;
     }
 
@@ -107,7 +129,7 @@ namespace my_http_lib
                 //We received some data
 
                 std::string msgReceived(recvBuffer.data(), byteReceived);
-                std::cout << "CLIENT : We received : " << msgReceived << std::endl;
+                std::cout << "SERVER : We received : " << msgReceived << std::endl;
 
                 /* Parse request! */
                 ParseRequestFromClient(msgReceived);
@@ -124,7 +146,7 @@ namespace my_http_lib
             {
                 //TODO - If RECV fail consider the client closed so call m_closeHandler
                 error = WSAGetLastError();
-                /*m_closeHandler*/
+                m_closeHandler(*this);
                 throw (fmt::format("There was an error {} while {}", error, "connection tried recv"));
             }
         }

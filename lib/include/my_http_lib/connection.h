@@ -33,6 +33,9 @@ namespace my_http_lib
 
         bool stop;
 
+        std::string currentPath;
+        char * currentMethod;
+
         llhttp_t m_parser;
 
         Request m_currentRequest;
@@ -52,13 +55,6 @@ namespace my_http_lib
         void ParseRequestFromClient(std::string msgReceived);
 
         /**
-         * Called when the message coming from the client is parsed
-         * @param m_parser THe parser to use
-         * @return
-         */
-        static int HandleOnMessageComplete(llhttp_t* m_parser);
-
-        /**
          * Called when the path of the client request is parsed
          * @param m_parser
          * @return
@@ -66,11 +62,25 @@ namespace my_http_lib
         static int HandlePathParsed(llhttp_t* m_parser);
 
         /**
+         * Called when the path of the client request is parsed
+         * @param m_parser
+         * @return
+         */
+        static int HandlePathParsing(llhttp_t* m_parser, const char *at, size_t length);
+
+        /**
          * Called when the method of the client request is parsed
          * @param m_parser
          * @return
          */
         static int HandleMethodParsed(llhttp_t* m_parser);
+
+        /**
+         * Called when the path of the client request is parsed
+         * @param m_parser
+         * @return
+         */
+        static int HandleMethodParsing(llhttp_t* m_parser, const char *at, size_t length);
 
         /**
          * Called when the body of the client request is parsed

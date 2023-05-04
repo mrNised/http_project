@@ -39,13 +39,6 @@ namespace my_http_lib {
         Response m_currentResponse;
 
         /**
-         * Called when the message coming from the server is parsed
-         * @param m_parser THe parser to use
-         * @return
-         */
-        static int HandleOnMessageComplete(llhttp_t* m_parser);
-
-        /**
          * Called when the status of the response is parsed
          * @param m_parser
          * @return
@@ -58,5 +51,11 @@ namespace my_http_lib {
          * @return
          */
         static int HandleBodyParsed(llhttp_t* m_parser, const char *at, size_t length);
+
+        /**
+         * Called to parse the response from the server
+         * @param msgReceived
+         */
+        void ParseResponseFromServer(std::string msgReceived);
     };
 }

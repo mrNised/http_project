@@ -46,8 +46,7 @@ namespace my_http_lib
     {
         //1 - In loop (blocking until the server is closed)
         //          - Accept new connection from the TCP socket
-        //TODO:     - For each new connection create a Connection object with the callbacks filled
-
+        //          - For each new connection create a Connection object with the callbacks filled
         //          - Add the Connection object to the list of all the connections
 
         IsServerClosed = false;

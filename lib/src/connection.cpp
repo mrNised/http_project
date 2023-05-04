@@ -144,7 +144,7 @@ namespace my_http_lib
             }
             else
             {
-                //TODO - If RECV fail consider the client closed so call m_closeHandler
+                //- If RECV fail consider the client closed so call m_closeHandler
                 error = WSAGetLastError();
                 m_closeHandler(*this);
                 throw (fmt::format("There was an error {} while {}", error, "connection tried recv"));

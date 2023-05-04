@@ -5,7 +5,7 @@ namespace my_http_lib {
 
     Method ParseMethod(const char* method, size_t  size)
     {
-        //TODO : parse the method from the data sent by llhttp
+        // parse the method from the data sent by llhttp
         return char_to_enum(method);
     }
 

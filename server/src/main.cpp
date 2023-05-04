@@ -4,6 +4,8 @@
 #include "my_http_lib/server.h"
 #include "fmt/format.h"
 #include <nlohmann/json.hpp>
+#include <iostream>
+#include <fstream>
 
 #ifdef WINDOWS_PLATFORM
 //We use a struct to always to WSAStartup and Cleanup only once in the
@@ -98,6 +100,22 @@ int main(int argc, char *argv[])
     });
     server.Get("/index.html", [](const Request& req, Response& resp){
         // Retourner la page index.html qui est à la racine du dossier
+        std::string line;
+        std::string body;
+        std::ifstream myfile("./index.html");
+        if (myfile.is_open())
+        {
+            while ( getline (myfile,line) )
+            {
+                body += (line + '\n');
+            }
+            myfile.close();
+            resp.SetCode(200);
+            resp.SetBody(body);
+        } else{
+            resp.SetCode(404);
+            resp.SetBody(fmt::format("Not found"));
+        }
     });
 
     server.Listen();
